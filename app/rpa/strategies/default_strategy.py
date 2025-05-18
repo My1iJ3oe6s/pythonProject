@@ -1,4 +1,4 @@
-from app.rpa.apiController import PlaceOrderRequest
+from apiController import PlaceOrderRequest
 from app.rpa.base import SupplierStrategy
 from typing import Dict, Any
 
