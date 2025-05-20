@@ -56,13 +56,17 @@ async def test():
         browser_path = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     # co = ChromiumOptions().set_browser_path(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
     co = ChromiumOptions().set_paths(browser_path=browser_path)
-    co.headless(False)
-    co.set_argument("--remote-debugging-port=9222")
+    # 2. 无头模式配置（根据系统情况选择）
+    co.headless(True)  # 框架封装方法，自动添加 --headless=new 参数
+    if os.name == 'posix':  # Linux 系统
+        co.set_argument("--remote-debugging-port=9222")
+        co.set_argument('--no-sandbox')
+        co.set_argument('--disable-dev-shm-usage')
     print("###### 连接浏览器成功")
     page = ChromiumPage(co)
     print("###### 打开浏览器页面成功")
     tab = page.new_tab('https://www.baidu.com')
-    print("###### 页面标题测试结果" + tab.title)
+    print("###### 页面标题测试结果: " + tab.title)
     tab.close()
     result = "###### 关闭标签页"
     if random.random() < 0.33:
