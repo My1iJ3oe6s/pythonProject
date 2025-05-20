@@ -55,7 +55,7 @@ async def test():
         browser_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
     # co = ChromiumOptions().set_browser_path(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
     co = ChromiumOptions().set_paths(browser_path=browser_path)
-    co.headless(False)
+    co.headless(True)
     print("###### 连接浏览器成功")
     page = ChromiumPage(co)
     print("###### 打开浏览器页面成功")
