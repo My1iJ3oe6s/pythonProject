@@ -19,20 +19,19 @@ class SelfPageStrategy(SupplierStrategy):
 
     @property
     def page(self):
-        browser_path = None
         if self._page is None:
+            browser_path = ""
             if os.name == 'posix':  # Linux 系统
                 browser_path = r"/opt/google/chrome/google-chrome"  # 或者 "/usr/bin/chromium-browser"
             elif os.name == 'nt':  # Windows 系统
-                browser_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-
+                browser_path = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+            # co = ChromiumOptions().set_browser_path(browser_path=r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe")
             co = ChromiumOptions().set_paths(browser_path=browser_path)
-            # co = ChromiumOptions().set_browser_path("/usr/bin/google-chrome") \
-            #     .set_argument('--headless=new') \
-            #     .set_argument('--disable-gpu') \
-            #     .set_argument('--no-sandbox') \
-            #     .set_argument('--disable-dev-shm-usage')
-            co.headless(False)
+            co.headless(True)
+            if os.name == 'posix':  # Linux 系统
+                co.set_argument(f"--remote-debugging-port=9222")
+                co.set_argument('--no-sandbox')
+                co.set_argument('--disable-dev-shm-usage')
             self._page = ChromiumPage(co)
         return self._page
 

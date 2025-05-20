@@ -27,7 +27,11 @@ class HuBeiPageStrategy(SupplierStrategy):
                 browser_path = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
             # co = ChromiumOptions().set_browser_path(browser_path=r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe")
             co = ChromiumOptions().set_paths(browser_path=browser_path)
-            co.headless(False)
+            co.headless(True)
+            if os.name == 'posix':  # Linux 系统
+                co.set_argument(f"--remote-debugging-port=9222")
+                co.set_argument('--no-sandbox')
+                co.set_argument('--disable-dev-shm-usage')
             self._page = ChromiumPage(co)
         return self._page
 
