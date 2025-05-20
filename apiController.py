@@ -1,3 +1,5 @@
+from DrissionPage._configs.chromium_options import ChromiumOptions
+from DrissionPage._pages.web_page import WebPage
 from fastapi import FastAPI, HTTPException
 from typing import Dict, Any, Optional
 from app.rpa.base import RPABaseService
@@ -40,6 +42,16 @@ async def place_order(request: PlaceOrderRequest) -> Dict[str, Any]:
     rpa_service = get_supplier_strategy(request.supplier_code, request.order_id)
     result = rpa_service.execute_place_order(request)
     return result
+
+@app.post("/api/v1/test")
+async def test():
+    """下单接口"""
+    co = ChromiumOptions().set_browser_path("/opt/google/chrome/google-chrome")
+    co.headless(True)
+    page = WebPage(chromium_options=co)
+    page.get('https://www.google.com')
+    print(page.title)
+    page.close()
 
 if __name__ == "__main__":
     import uvicorn
