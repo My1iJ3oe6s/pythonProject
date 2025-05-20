@@ -1,5 +1,6 @@
-from DrissionPage._configs.chromium_options import ChromiumOptions
-from DrissionPage._pages.web_page import WebPage
+import os
+
+from DrissionPage import ChromiumPage, ChromiumOptions
 from fastapi import FastAPI, HTTPException
 from typing import Dict, Any, Optional
 from app.rpa.base import RPABaseService
@@ -46,11 +47,20 @@ async def place_order(request: PlaceOrderRequest) -> Dict[str, Any]:
 @app.post("/api/v1/test")
 async def test():
     """下单接口"""
-    co = ChromiumOptions().set_browser_path("/opt/google/chrome/google-chrome")
-    co.headless(True)
-    page = WebPage(chromium_options=co)
-    page.get('https://www.google.com')
-    print(page.title)
+    print("###### 测试开始")
+    browser_path = ""
+    if os.name == 'posix':  # Linux 系统
+        browser_path = r"/opt/google/chrome/google-chrome"  # 或者 "/usr/bin/chromium-browser"
+    elif os.name == 'nt':  # Windows 系统
+        browser_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+    # co = ChromiumOptions().set_browser_path(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+    co = ChromiumOptions().set_paths(browser_path=browser_path)
+    co.headless(False)
+    print("###### 连接浏览器成功")
+    page = ChromiumPage(co)
+    print("###### 打开浏览器页面成功")
+    tab = page.new_tab('https://www.google.com')
+    print("###### 页面标题测试结果" + tab.title)
     page.close()
 
 if __name__ == "__main__":

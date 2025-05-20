@@ -2,6 +2,7 @@ from DrissionPage import ChromiumPage, ChromiumOptions
 
 try:
     co = ChromiumOptions().set_paths(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+    # co.set_argument("--remote-debugging-port=9222")
     co.headless(False)  # 确保浏览器可见
     page = ChromiumPage(co)
     print("浏览器已启动，标题：", page.title)
