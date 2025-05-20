@@ -1,4 +1,5 @@
 import os
+import random  # 导入random模块
 
 from DrissionPage import ChromiumPage, ChromiumOptions
 from fastapi import FastAPI, HTTPException
@@ -52,7 +53,7 @@ async def test():
     if os.name == 'posix':  # Linux 系统
         browser_path = r"/opt/google/chrome/google-chrome"  # 或者 "/usr/bin/chromium-browser"
     elif os.name == 'nt':  # Windows 系统
-        browser_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+        browser_path = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     # co = ChromiumOptions().set_browser_path(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
     co = ChromiumOptions().set_paths(browser_path=browser_path)
     co.headless(True)
@@ -61,7 +62,12 @@ async def test():
     print("###### 打开浏览器页面成功")
     tab = page.new_tab('https://www.google.com')
     print("###### 页面标题测试结果" + tab.title)
-    page.close()
+    tab.close()
+    result = "###### 关闭标签页"
+    if random.random() < 0.33:
+        page.close()
+        result = "page.close() 已执行"
+    return result
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,3 +1,4 @@
+import os
 from typing import Dict, Any, Optional
 from DrissionPage import ChromiumPage, ChromiumOptions
 import time
@@ -19,27 +20,24 @@ class HuBeiPageStrategy(SupplierStrategy):
     @property
     def page(self):
         if self._page is None:
-            co = ChromiumOptions().set_paths(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+            browser_path = ""
+            if os.name == 'posix':  # Linux 系统
+                browser_path = r"/opt/google/chrome/google-chrome"  # 或者 "/usr/bin/chromium-browser"
+            elif os.name == 'nt':  # Windows 系统
+                browser_path = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+            # co = ChromiumOptions().set_browser_path(browser_path=r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe")
+            co = ChromiumOptions().set_paths(browser_path=browser_path)
             co.headless(False)
             self._page = ChromiumPage(co)
         return self._page
 
     def open_order_page(self, request: PlaceOrderRequest) -> Dict[str, Any]:
         """导航到下单页面"""
-
-        # co = ChromiumOptions().set_paths(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
-        # # 1、设置无头模式：
-
-        # # 2、设置无痕模式：co.incognito(True)
-        # # 3、设置访客模式：co.set_argument('--guest')
-        # # 4、设置请求头user-agent：co.set_user_agent()
-        # # 5、设置指定端口号：co.set_local_port(7890)
-        # # 6、设置代理：co.set_proxy('http://localhost:1080')
-        # self.page = ChromiumPage(co)
         if not hasattr(self, 'tabs'):
             self.tabs = {}
         tab = self.page.new_tab(request.open_url)
         self.tabs[request.order_id] = tab
+        print("###### 打开站点成功：" + request.open_url)
         # 请求回调函数
         return {
             'status': 'success',
@@ -67,13 +65,14 @@ class HuBeiPageStrategy(SupplierStrategy):
             raise Exception(f"Tab not found for order: {request.order_id}")
 
         tab.listen.start('/smsCheck.action')  # 启动监听器
-        print("### 3、执行发送短信操作")
+        print("###### 执行发送短信操作：" + request.order_id)
         # 点击获取验证码按钮
         verify_code_btn = tab.ele('#getRandomss')
         if verify_code_btn:
             verify_code_btn.click()
+            print("###### 执行发送短信操作：点击发送成功" + request.order_id)
         else:
-            raise Exception("### 3、获取验证码按钮未找到")
+            raise Exception("###### error:获取验证码按钮未找到")
         # 等待并捕获短信请求的响应
         try:
             res = tab.listen.wait(timeout=10)  # 等待最多10秒
@@ -82,13 +81,14 @@ class HuBeiPageStrategy(SupplierStrategy):
                 # 假设响应中包含code字段
                 self.request_data = f"{res.request.postData}"
                 self.response_data = f"{res.response.body}"
+                print("###### 执行发送短信操作：获取返回结果" + self.response_data)
                 if  res.response.body != "0":
                     self.success = False
             else:
-                print("### 3、获取验证码接口返回失败")
+                print("###### error:获取验证码接口返回失败")
                 self.sms_code = ""  # 默认验证码
         except Exception as e:
-            print(f"3、Error capturing SMS code: {e}")
+            print(f"###### error: Error capturing SMS code: {e}")
             raise Exception(f"GET Verify code Error：{request.order_id}")
         return {
             'code': 200 if self.success else 500,
