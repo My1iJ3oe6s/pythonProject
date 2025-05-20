@@ -69,7 +69,6 @@ async def test():
         print("###### 打开浏览器页面成功")
         tab = page.new_tab('https://www.baidu.com')
         print("###### 页面标题测试结果: " + tab.title)
-        tab.close()
         return "###### 打开的页面为：" + tab.title
     except Exception as e:
         print(f"###### 错误: {e}")
