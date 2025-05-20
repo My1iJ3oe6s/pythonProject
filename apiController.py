@@ -56,11 +56,12 @@ async def test():
         browser_path = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     # co = ChromiumOptions().set_browser_path(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
     co = ChromiumOptions().set_paths(browser_path=browser_path)
-    co.headless(True)
+    co.headless(False)
+    co.set_argument("--remote-debugging-port=9222")
     print("###### 连接浏览器成功")
     page = ChromiumPage(co)
     print("###### 打开浏览器页面成功")
-    tab = page.new_tab('https://www.google.com')
+    tab = page.new_tab('https://www.baidu.com')
     print("###### 页面标题测试结果" + tab.title)
     tab.close()
     result = "###### 关闭标签页"
