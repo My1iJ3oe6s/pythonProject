@@ -29,11 +29,17 @@ class HuBeiPageStrategy(SupplierStrategy):
             # co = ChromiumOptions().set_browser_path(browser_path=r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe")
             co = ChromiumOptions().set_paths(browser_path=browser_path)
             co.headless(True)
+            co.incognito()  # 匿名模式
+            co.set_argument('--ignore_https_errors')
+            co.set_argument('--no-sandbox')
+            co.set_argument('--disable-dev-shm-usage')
             co.set_argument(f"--remote-debugging-port=9222")
-            if os.name == 'posix':  # Linux 系统=
-                co.set_argument('--no-sandbox')
-                co.set_argument('--disable-dev-shm-usage')
+            co.set_argument(f"--disable-web-security")
+            co.set_argument(f"--allow-running-insecure-content")
+            co.set_argument('--ignore-certificate-errors', True)
+            co.ignore_certificate_errors()
             self._page = ChromiumPage(co)
+
         return self._page
 
     def open_order_page(self, request: PlaceOrderRequest) -> Dict[str, Any]:
