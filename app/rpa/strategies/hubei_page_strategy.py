@@ -28,8 +28,8 @@ class HuBeiPageStrategy(SupplierStrategy):
             # co = ChromiumOptions().set_browser_path(browser_path=r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe")
             co = ChromiumOptions().set_paths(browser_path=browser_path)
             co.headless(True)
-            if os.name == 'posix':  # Linux 系统
-                co.set_argument(f"--remote-debugging-port=9222")
+            co.set_argument(f"--remote-debugging-port=9222")
+            if os.name == 'posix':  # Linux 系统=
                 co.set_argument('--no-sandbox')
                 co.set_argument('--disable-dev-shm-usage')
             self._page = ChromiumPage(co)
@@ -69,14 +69,14 @@ class HuBeiPageStrategy(SupplierStrategy):
             raise Exception(f"Tab not found for order: {request.order_id}")
 
         tab.listen.start('/smsCheck.action')  # 启动监听器
-        print("###### 执行发送短信操作：" + request.order_id)
+        print("###### RPA发送验证码: 开始：" + request.order_id)
         # 点击获取验证码按钮
         verify_code_btn = tab.ele('#getRandomss')
         if verify_code_btn:
             verify_code_btn.click()
-            print("###### 执行发送短信操作：点击发送成功" + request.order_id)
+            print("###### RPA发送验证码: 点击获取验证码按钮：" + request.order_id)
         else:
-            raise Exception("###### error:获取验证码按钮未找到")
+            raise Exception("###### RPA发送验证码error:获取验证码按钮未找到")
         # 等待并捕获短信请求的响应
         try:
             res = tab.listen.wait(timeout=10)  # 等待最多10秒
@@ -85,14 +85,14 @@ class HuBeiPageStrategy(SupplierStrategy):
                 # 假设响应中包含code字段
                 self.request_data = f"{res.request.postData}"
                 self.response_data = f"{res.response.body}"
-                print("###### 执行发送短信操作：获取返回结果" + self.response_data)
+                print("###### RPA发送验证码:执行发送短信操作：获取返回结果" + self.response_data)
                 if  res.response.body != "0":
                     self.success = False
             else:
-                print("###### error:获取验证码接口返回失败")
+                print("###### RPA发送验证码error:获取验证码接口返回失败")
                 self.sms_code = ""  # 默认验证码
         except Exception as e:
-            print(f"###### error: Error capturing SMS code: {e}")
+            print(f"###### RPA发送验证码error: Error capturing SMS code: {e}")
             raise Exception(f"GET Verify code Error：{request.order_id}")
         return {
             'code': 200 if self.success else 500,
