@@ -20,8 +20,6 @@ class HuBeiPageStrategy(SupplierStrategy):
 
     @property
     def page(self):
-        if self._page:
-            self._page.quit()
         if self._page is None:
             browser_path = ""
             if os.name == 'posix':  # Linux 系统

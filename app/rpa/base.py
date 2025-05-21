@@ -1,3 +1,4 @@
+import traceback
 from abc import ABC, abstractmethod
 from typing import Dict, Any
 
@@ -55,6 +56,7 @@ class RPABaseService:
                 'responseData': sms_response.get('responseData')
             }
         except Exception as e:
+            print("【异常堆栈】", traceback.format_exc())
             return {
                 'success': False,
                 'error': str(e),
