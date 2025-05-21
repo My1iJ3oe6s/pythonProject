@@ -37,8 +37,10 @@ class HuBeiPageStrategy(SupplierStrategy):
             co.set_argument(f"--disable-web-security")
             co.set_argument(f"--allow-running-insecure-content")
             co.set_argument('--ignore-certificate-errors', True)
+            # 禁用图片资源  主要是为了加快页面加载
+            co.set_argument('--blink-settings=imagesEnabled=false')
             co.ignore_certificate_errors()
-            self._page = ChromiumPage(co)
+            self._page = ChromiumPage(co, timeout=60)
 
         return self._page
 
@@ -72,6 +74,7 @@ class HuBeiPageStrategy(SupplierStrategy):
     def get_verification_code(self, request: PlaceOrderRequest) -> Dict[str, Any]:
         """获取验证码（通过监听网络请求），基于订单号的tab"""
         tab = self.get_order_tab(request.order_id)
+        msg = ""
         if not tab:
             raise Exception(f"Tab not found for order: {request.order_id}")
 
@@ -86,25 +89,31 @@ class HuBeiPageStrategy(SupplierStrategy):
             raise Exception("###### RPA发送验证码error:获取验证码按钮未找到")
         # 等待并捕获短信请求的响应
         try:
-            res = tab.listen.wait(timeout=10)  # 等待最多10秒
-            if res and res.response and res.response.body:
+            res = tab.listen.wait(timeout=30)  # 等待最多10秒
+            if res and res.response:
                 # 这里需要根据实际响应格式提取验证码
                 # 假设响应中包含code字段
                 self.request_data = f"{res.request.postData}"
                 self.response_data = f"{res.response.body}"
                 print("###### RPA发送验证码:执行发送短信操作：获取返回结果" + self.response_data)
-                if  res.response.body != "0":
+                if  res.response.body != 0:
                     self.success = False
             else:
                 print("###### RPA发送验证码error:获取验证码接口返回失败")
                 self.sms_code = ""  # 默认验证码
+            send_confire_but = tab.ele('#mb_btn_ok')
+            if send_confire_but:
+                msg = tab.ele('#mb_msg')
+                print("###### RPA发送验证码: 关闭发送短信后的弹窗,提示信息为：" + msg.text)
+                send_confire_but.click()
         except Exception as e:
             print(f"###### RPA发送验证码error: Error capturing SMS code: {e}")
+            tab.close()
             raise Exception(f"GET Verify code Error：{request.order_id}")
         return {
             'code': 200 if self.success else 500,
             'data':  f"{self.response_data}",
-            'msg': 'success' if self.success else 'fail',
+            'msg': msg,
             'resultLog':  f"{self.response_data}",
             'orderNo': request.order_id,
             'supplierOrderNo': '',
