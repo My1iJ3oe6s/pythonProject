@@ -16,6 +16,7 @@ class HuBeiPageStrategy(SupplierStrategy):
         self.response_data = ""
         self.request_data = ""
         self.success = True
+        self.tabs = {}
 
     @property
     def page(self):

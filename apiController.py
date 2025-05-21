@@ -34,7 +34,7 @@ def get_supplier_strategy(supplier_code: str, order_id: Optional[str] = None) ->
 @app.post("/api/v1/get-code")
 async def get_verification_code(request: PlaceOrderRequest) -> Dict[str, Any]:
     """获取验证码接口"""
-    print("###### RPA发送验证码：" + request.order_id + "," + request.phone_number)
+    print("###### RPA发送验证码：" + request.order_id + "," + request.phone)
     rpa_service = get_supplier_strategy(request.supplier_code, request.order_id)
     print("###### RPA发送验证码：获取供应商策略实例：" + request.supplier_code)
     result = rpa_service.get_verification_code(request)
