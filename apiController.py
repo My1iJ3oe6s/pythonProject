@@ -60,17 +60,23 @@ async def test():
     # co = ChromiumOptions().set_browser_path(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
     co = ChromiumOptions().set_paths(browser_path=browser_path)
     # 2. 无头模式配置（根据系统情况选择）
-    co.headless(True)  # 框架封装方法，自动添加 --headless=new 参数
-    if os.name == 'posix':  # Linux 系统
-        co.set_argument(f"--remote-debugging-port=9222")
-        co.set_argument('--no-sandbox')
-        co.set_argument('--disable-dev-shm-usage')
-    print("###### 连接浏览器成功")
+    co.headless(True)
+    co.incognito()  # 匿名模式
+    co.set_argument('--ignore_https_errors')
+    co.set_argument('--no-sandbox')
+    co.set_argument('--disable-dev-shm-usage')
+    co.set_argument(f"--remote-debugging-port=9222")
+    co.set_argument(f"--disable-web-security")
+    co.set_argument(f"--allow-running-insecure-content")
+    co.set_argument('--ignore-certificate-errors', True)
+    # 禁用图片资源  主要是为了加快页面加载
+    co.set_argument('--blink-settings=imagesEnabled=false')
+    co.ignore_certificate_errors()
     page = None
     try:
         page = ChromiumPage(co)
         print("###### 打开浏览器页面成功")
-        tab = page.new_tab('https://www.baidu.com')
+        tab = page.new_tab('https://hb.189.cn/xhy?o=7DD5AD758DC424463F616B4E9CD2BA2E&k=ECA48F85E135D9A9A3B81CAEA55AE70C&u=8EE7731A31A4E307C541F9702653BD045987B06DC5F424F1&s=45FB50B8E1D1EDBC9F3E7E44CEB587A4')
         print("###### 页面标题测试结果: " + tab.title)
         return "###### 打开的页面为：" + tab.title
     except Exception as e:
