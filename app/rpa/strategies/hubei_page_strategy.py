@@ -20,6 +20,8 @@ class HuBeiPageStrategy(SupplierStrategy):
 
     @property
     def page(self):
+        if self._page:
+            self._page.quit()
         if self._page is None:
             browser_path = ""
             if os.name == 'posix':  # Linux 系统
@@ -40,7 +42,7 @@ class HuBeiPageStrategy(SupplierStrategy):
             # 禁用图片资源  主要是为了加快页面加载
             co.set_argument('--blink-settings=imagesEnabled=false')
             co.ignore_certificate_errors()
-            self._page = ChromiumPage(co, timeout=60)
+            self._page = ChromiumPage(co, timeout=90)
 
         return self._page
 
