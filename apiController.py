@@ -60,7 +60,7 @@ async def test():
     # co = ChromiumOptions().set_browser_path(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
     co = ChromiumOptions().set_paths(browser_path=browser_path)
     # 2. 无头模式配置（根据系统情况选择）
-    co.headless(True)
+    co.headless(False)
     co.incognito()  # 匿名模式
     co.set_argument('--ignore_https_errors')
     co.set_argument('--no-sandbox')
@@ -125,13 +125,13 @@ async def test():
 
     # 禁用图片资源  主要是为了加快页面加载
     co.set_argument('--blink-settings=imagesEnabled=false')
-    co.set_argument(
-        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-    co.set_argument('--window-size=1920,1080')  # 设置窗口尺寸
+    # co.set_argument(
+    #     '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+    # co.set_argument('--window-size=1920,1080')  # 设置窗口尺寸
     co.ignore_certificate_errors()
     page = None
     try:
-        page = ChromiumPage(co)
+        page = ChromiumPage(co, timeout=90)
 
         print("###### 打开浏览器页面成功")
         tab = page.new_tab('https://hb.189.cn/xhy?o=7DD5AD758DC424463F616B4E9CD2BA2E&k=ECA48F85E135D9A9A3B81CAEA55AE70C&u=8EE7731A31A4E307C541F9702653BD045987B06DC5F424F1&s=45FB50B8E1D1EDBC9F3E7E44CEB587A4')
