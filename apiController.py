@@ -80,6 +80,14 @@ async def test():
         tab = page.new_tab(
             'https://hls.it.10086.cn/v1/tfs/T1LtxTB7AT1RXx1p6K.html?shopId=MmrqURAm&goodsId=528243')
         print("###### 页面标题测试结果: " + tab.title)
+        # page.wait(5)
+        # element = page.ele('#handleButton')
+        # element.click()
+        element = tab.ele('.ui-btn ui-btn_primary')
+        element.click()
+        sj = tab.ele('#serviceNum')
+        placeholder_text = sj.attrs.get("placeholder")
+        print("###### 获取的弹框文字为:" + placeholder_text)
         return "###### 打开的页面为：" + tab.title
     except Exception as e:
         print(f"###### 错误: {e}")
