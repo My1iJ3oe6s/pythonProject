@@ -82,7 +82,7 @@ async def test():
         # tab = page.new_tab('https://hb.189.cn/xhy?o=7DD5AD758DC424463F616B4E9CD2BA2E&k=ECA48F85E135D9A9A3B81CAEA55AE70C&u=8EE7731A31A4E307C541F9702653BD045987B06DC5F424F1&s=45FB50B8E1D1EDBC9F3E7E44CEB587A4')
         tab = page.new_tab(
            'https://hls.it.10086.cn/v1/tfs/T1LtxTB7AT1RXx1p6K.html?shopId=MmrqURAm&goodsId=528243')
-        page.wait(1)
+        # page.wait(1)
         print("###### 页面标题测试结果: " + tab.title)
 
         # element = page.ele('#handleButton')
@@ -99,6 +99,64 @@ async def test():
         # 确保页面和浏览器实例正确关闭
         if page:
             page.close()  # 关闭页面
+
+
+@app.post("/api/v1/test-Wuhan")
+async def test():
+    """下单接口"""
+    print("###### 测试开始")
+    browser_path = ""
+    if os.name == 'posix':  # Linux 系统
+        browser_path = r"/opt/google/chrome/google-chrome"  # 或者 "/usr/bin/chromium-browser"
+    elif os.name == 'nt':  # Windows 系统
+        browser_path = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+    # co = ChromiumOptions().set_browser_path(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+    co = ChromiumOptions().set_paths(browser_path=browser_path)
+    # 2. 无头模式配置（根据系统情况选择）
+    co.headless(True)
+    co.incognito()  # 匿名模式
+    co.set_argument('--ignore_https_errors')
+    co.set_argument('--no-sandbox')
+    co.set_argument('--disable-dev-shm-usage')
+    co.set_argument(f"--remote-debugging-port=9222")
+    co.set_argument(f"--disable-web-security")
+    co.set_argument(f"--allow-running-insecure-content")
+    co.set_argument('--ignore-certificate-errors', True)
+    # 禁用图片资源  主要是为了加快页面加载
+    co.set_argument('--blink-settings=imagesEnabled=false')
+    co.set_argument(
+        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+    co.set_argument('--window-size=1920,1080')  # 设置窗口尺寸
+    co.ignore_certificate_errors()
+    page = None
+    try:
+        page = ChromiumPage(co)
+
+        print("###### 打开浏览器页面成功")
+        tab = page.new_tab('https://hb.189.cn/xhy?o=7DD5AD758DC424463F616B4E9CD2BA2E&k=ECA48F85E135D9A9A3B81CAEA55AE70C&u=8EE7731A31A4E307C541F9702653BD045987B06DC5F424F1&s=45FB50B8E1D1EDBC9F3E7E44CEB587A4')
+        #tab = page.new_tab(
+         #  'https://hls.it.10086.cn/v1/tfs/T1LtxTB7AT1RXx1p6K.html?shopId=MmrqURAm&goodsId=528243')
+        # page.wait(1)
+        print("###### 页面标题测试结果: " + tab.title)
+        tab.listen.start('/smsCheck.action')
+        # element = page.ele('#handleButton')
+        # element.click()
+        verify_code_btn = tab.ele('#getRandomss')
+        verify_code_btn.click()
+        res = tab.listen.wait(timeout=30)  # 等待最多10秒
+        if res and res.response:
+            # 这里需要根据实际响应格式提取验证码
+            # 假设响应中包含code字段
+            print("###### RPA发送验证码:执行发送短信操作：获取返回结果" +  str(res.response.body) )
+        print("###### 获取的弹框文字为:" )
+        return "###### 打开的页面为：" + tab.title
+    except Exception as e:
+        print(f"###### 错误: {e}")
+    finally:
+        # 确保页面和浏览器实例正确关闭
+        if page:
+            page.close()  # 关闭页面
+
 
 
 if __name__ == "__main__":
