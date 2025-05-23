@@ -134,6 +134,38 @@ async def test():
     try:
         page = ChromiumPage(co, timeout=90)
 
+        # 1. 设置更真实的浏览器特征
+        page.set.load_mode.normal()  # 使用正常加载模式
+
+
+        # 2. 修改浏览器特征
+        page.run_js("""
+            // 修改 navigator 属性
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined
+            });
+
+            // 修改 Headers 原型
+            if (Headers.prototype.append) {
+                const originalAppend = Headers.prototype.append;
+                Headers.prototype.append = function(name, value) {
+                    if (name.toLowerCase() === 'function') {
+                        return;
+                    }
+                    return originalAppend.call(this, name, value);
+                };
+            }
+        """)
+
+        # 3. 设置请求头
+        page.set.headers({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive'
+        })
+
         print("###### 打开浏览器页面成功")
         page.get('https://hb.189.cn/xhy?o=7DD5AD758DC424463F616B4E9CD2BA2E&k=ECA48F85E135D9A9A3B81CAEA55AE70C&u=8EE7731A31A4E307C541F9702653BD045987B06DC5F424F1&s=45FB50B8E1D1EDBC9F3E7E44CEB587A4')
         #tab = page.new_tab(
