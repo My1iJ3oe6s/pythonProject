@@ -125,10 +125,11 @@ async def test():
 
     # 禁用图片资源  主要是为了加快页面加载
     co.set_argument('--blink-settings=imagesEnabled=false')
-    # co.set_argument(
-    #     '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-    # co.set_argument('--window-size=1920,1080')  # 设置窗口尺寸
+    co.set_argument(
+        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+    co.set_argument('--window-size=1920,1080')  # 设置窗口尺寸
     co.ignore_certificate_errors()
+    print("###### 测试开始1")
     page = None
     try:
         page = ChromiumPage(co, timeout=90)
