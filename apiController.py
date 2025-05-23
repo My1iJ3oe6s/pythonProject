@@ -9,7 +9,9 @@ from app.rpa.base import RPABaseService
 from app.rpa.request import PlaceOrderRequest
 from app.rpa.strategies.hubei_page_strategy import HuBeiPageStrategy
 from app.rpa.strategies.self_page_strategy import SelfPageStrategy
-
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.Order.order_dao import SelfStockOrderDAO, SessionLocal
 app = FastAPI()
 
 # 定义下单请求的数据模型
@@ -238,6 +240,27 @@ async def test():
     finally:
         if page:
             page.close()
+
+
+# Dependency to get DB session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.post("/orders/status/supplier")
+async def read_orders(params: dict, db: Session = Depends(get_db)):
+    order_status = params.get('order_status')
+    supplier_code = params.get('supplier_code')
+    
+    if order_status is None or supplier_code is None:
+        raise HTTPException(status_code=400, detail="Missing required parameters")
+    
+    dao = SelfStockOrderDAO(db)
+    orders = dao.get_orders_by_status_and_supplier(order_status, supplier_code)
+    return {"count": len(orders), "orders": orders}
 
 
 if __name__ == "__main__":
