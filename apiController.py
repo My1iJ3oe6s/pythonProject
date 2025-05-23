@@ -113,7 +113,7 @@ async def test():
     # co = ChromiumOptions().set_browser_path(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
     co = ChromiumOptions().set_paths(browser_path=browser_path)
     # 2. 无头模式配置（根据系统情况选择）
-    co.headless(True)
+    co.headless(False)
     co.incognito()  # 匿名模式
     co.set_argument('--ignore_https_errors')
     co.set_argument('--no-sandbox')
