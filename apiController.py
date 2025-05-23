@@ -1,5 +1,6 @@
 import os
 import random  # 导入random模块
+import time
 
 from DrissionPage import ChromiumPage, ChromiumOptions
 from fastapi import FastAPI, HTTPException
@@ -107,14 +108,15 @@ async def test():
     print("###### 测试开始")
     browser_path = ""
     if os.name == 'posix':  # Linux 系统
-        browser_path = r"/opt/google/chrome/google-chrome"  # 或者 "/usr/bin/chromium-browser"
+        browser_path = r"/opt/google/chrome/google-chrome"
     elif os.name == 'nt':  # Windows 系统
         browser_path = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-    # co = ChromiumOptions().set_browser_path(browser_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+
     co = ChromiumOptions().set_paths(browser_path=browser_path)
-    # 2. 无头模式配置（根据系统情况选择）
+
+    # 基础配置
     co.headless(False)
-    co.incognito()  # 匿名模式
+    co.incognito()
     co.set_argument('--ignore_https_errors')
     co.set_argument('--no-sandbox')
     co.set_argument('--disable-dev-shm-usage')
@@ -122,21 +124,19 @@ async def test():
     co.set_argument(f"--disable-web-security")
     co.set_argument(f"--allow-running-insecure-content")
     co.set_argument('--ignore-certificate-errors', True)
-
-    # 禁用图片资源  主要是为了加快页面加载
     co.set_argument('--blink-settings=imagesEnabled=false')
     co.set_argument(
         '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-    co.set_argument('--window-size=1920,1080')  # 设置窗口尺寸
+    co.set_argument('--window-size=1920,1080')
     co.ignore_certificate_errors()
+
     print("###### 测试开始1")
     page = None
     try:
         page = ChromiumPage(co, timeout=90)
 
         # 1. 设置更真实的浏览器特征
-        page.set.load_mode.normal()  # 使用正常加载模式
-
+        page.set.load_mode.normal()
 
         # 2. 修改浏览器特征
         page.run_js("""
@@ -155,6 +155,10 @@ async def test():
                     return originalAppend.call(this, name, value);
                 };
             }
+
+            // 禁用检测函数
+            window._$_l = function() { return true; };
+            window.$_ts = undefined;
         """)
 
         # 3. 设置请求头
@@ -163,34 +167,77 @@ async def test():
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
             'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive'
+            'Connection': 'keep-alive',
+            'Cache-Control': 'max-age=0'
         })
 
+        # 4. 模拟用户行为
+        def simulate_user_behavior():
+            time.sleep(random.uniform(1, 3))
+            page.run_js("""
+                var event = new MouseEvent('mousemove', {
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': true,
+                    'clientX': %d,
+                    'clientY': %d
+                });
+                document.dispatchEvent(event);
+            """ % (random.randint(100, 700), random.randint(100, 500)))
+
         print("###### 打开浏览器页面成功")
-        page.get('https://hb.189.cn/xhy?o=7DD5AD758DC424463F616B4E9CD2BA2E&k=ECA48F85E135D9A9A3B81CAEA55AE70C&u=8EE7731A31A4E307C541F9702653BD045987B06DC5F424F1&s=45FB50B8E1D1EDBC9F3E7E44CEB587A4')
-        #tab = page.new_tab(
-         #  'https://hls.it.10086.cn/v1/tfs/T1LtxTB7AT1RXx1p6K.html?shopId=MmrqURAm&goodsId=528243')
-        # page.wait(1)
+
+        # 5. 访问页面前模拟用户行为
+        simulate_user_behavior()
+
+        # 6. 访问目标页面
+        page.get(
+            'https://hb.189.cn/xhy?o=7DD5AD758DC424463F616B4E9CD2BA2E&k=ECA48F85E135D9A9A3B81CAEA55AE70C&u=8EE7731A31A4E307C541F9702653BD045987B06DC5F424F1&s=45FB50B8E1D1EDBC9F3E7E44CEB587A4')
+
+        # 7. 等待页面加载完成
+       # page.wait.load_complete()
+
+        # 8. 再次模拟用户行为
+        simulate_user_behavior()
+
         print("###### 页面标题测试结果: " + page.title)
+
+        # 9. 监听验证码请求
         page.listen.start('/smsCheck.action')
-        # element = page.ele('#handleButton')
-        # element.click()
+
+        # 10. 点击验证码按钮
         verify_code_btn = page.ele('#getRandomss')
-        verify_code_btn.click()
-        res = page.listen.wait(timeout=30)  # 等待最多10秒
+        if verify_code_btn:
+            # 模拟真实点击
+            page.run_js("""
+                var element = document.querySelector('#getRandomss');
+                if(element) {
+                    var rect = element.getBoundingClientRect();
+                    var event = new MouseEvent('click', {
+                        'view': window,
+                        'bubbles': true,
+                        'cancelable': true,
+                        'clientX': rect.left + rect.width/2,
+                        'clientY': rect.top + rect.height/2
+                    });
+                    element.dispatchEvent(event);
+                }
+            """)
+
+        # 11. 等待验证码响应
+        res = page.listen.wait(timeout=30)
         if res and res.response:
-            # 这里需要根据实际响应格式提取验证码
-            # 假设响应中包含code字段
-            print("###### RPA发送验证码:执行发送短信操作：获取返回结果" +  str(res.response.body) )
-        print("###### 获取的弹框文字为:" )
+            print("###### RPA发送验证码:执行发送短信操作：获取返回结果" + str(res.response.body))
+
         return "###### 打开的页面为：" + page.title
+
     except Exception as e:
         print(f"###### 错误: {e}")
-    finally:
-        # 确保页面和浏览器实例正确关闭
-        if page:
-            page.close()  # 关闭页面
+        return f"###### 发生错误: {str(e)}"
 
+    finally:
+        if page:
+            page.close()
 
 
 if __name__ == "__main__":
