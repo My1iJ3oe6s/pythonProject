@@ -134,23 +134,23 @@ async def test():
         page = ChromiumPage(co, timeout=90)
 
         print("###### 打开浏览器页面成功")
-        tab = page.new_tab('https://hb.189.cn/xhy?o=7DD5AD758DC424463F616B4E9CD2BA2E&k=ECA48F85E135D9A9A3B81CAEA55AE70C&u=8EE7731A31A4E307C541F9702653BD045987B06DC5F424F1&s=45FB50B8E1D1EDBC9F3E7E44CEB587A4')
+        page.get('https://hb.189.cn/xhy?o=7DD5AD758DC424463F616B4E9CD2BA2E&k=ECA48F85E135D9A9A3B81CAEA55AE70C&u=8EE7731A31A4E307C541F9702653BD045987B06DC5F424F1&s=45FB50B8E1D1EDBC9F3E7E44CEB587A4')
         #tab = page.new_tab(
          #  'https://hls.it.10086.cn/v1/tfs/T1LtxTB7AT1RXx1p6K.html?shopId=MmrqURAm&goodsId=528243')
         # page.wait(1)
-        print("###### 页面标题测试结果: " + tab.title)
-        tab.listen.start('/smsCheck.action')
+        print("###### 页面标题测试结果: " + page.title)
+        page.listen.start('/smsCheck.action')
         # element = page.ele('#handleButton')
         # element.click()
-        verify_code_btn = tab.ele('#getRandomss')
+        verify_code_btn = page.ele('#getRandomss')
         verify_code_btn.click()
-        res = tab.listen.wait(timeout=30)  # 等待最多10秒
+        res = page.listen.wait(timeout=30)  # 等待最多10秒
         if res and res.response:
             # 这里需要根据实际响应格式提取验证码
             # 假设响应中包含code字段
             print("###### RPA发送验证码:执行发送短信操作：获取返回结果" +  str(res.response.body) )
         print("###### 获取的弹框文字为:" )
-        return "###### 打开的页面为：" + tab.title
+        return "###### 打开的页面为：" + page.title
     except Exception as e:
         print(f"###### 错误: {e}")
     finally:
