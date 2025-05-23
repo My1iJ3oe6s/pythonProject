@@ -118,7 +118,7 @@ async def test():
     co.set_argument('--ignore_https_errors')
     co.set_argument('--no-sandbox')
     co.set_argument('--disable-dev-shm-usage')
-    co.set_argument(f"--remote-debugging-port=9222")
+    co.set_argument(f"--remote-debugging-port=9233")
     co.set_argument(f"--disable-web-security")
     co.set_argument(f"--allow-running-insecure-content")
     co.set_argument('--ignore-certificate-errors', True)
