@@ -1,55 +1,30 @@
 import os
 import random  # 导入random模块
 import time
+from app.service.background_service import BackgroundService  # 导入后台服务模块
+from threading import Thread  # 导入线程模块
 
 from DrissionPage import ChromiumPage, ChromiumOptions
-from fastapi import FastAPI, HTTPException
-from typing import Dict, Any, Optional
-from app.rpa.base import RPABaseService
+from fastapi import FastAPI
+from typing import Dict, Any
 from app.rpa.request import PlaceOrderRequest
-from app.rpa.strategies.hubei_page_strategy import HuBeiPageStrategy
-from app.rpa.strategies.self_page_strategy import SelfPageStrategy
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.Order.order_dao import SelfStockOrderDAO, SessionLocal
+from app.service.order_service import OrderService  # 导入订单服务
+from app.service.order_push_service import OrderPushService  # 导入新的订单推送服务
+
 app = FastAPI()
-
-# 定义下单请求的数据模型
-
-
-
-# 供应商策略工厂
-SUPPLIER_STRATEGIES = {
-    "self": SelfPageStrategy(),  # 添加自营的策略
-    "hubei-dianxin": HuBeiPageStrategy()
-}
-
-
-
-def get_supplier_strategy(supplier_code: str, order_id: Optional[str] = None) -> RPABaseService:
-    """获取对应的供应商策略实例，优先复用已有会话"""
-    strategy = SUPPLIER_STRATEGIES.get(supplier_code.lower())
-    if not strategy:
-        raise HTTPException(status_code=400, detail=f"Unsupported supplier: {supplier_code}")
-    rpa_service = RPABaseService(strategy)
-    return rpa_service
 
 @app.post("/api/v1/get-code")
 async def get_verification_code(request: PlaceOrderRequest) -> Dict[str, Any]:
     """获取验证码接口"""
-    print("###### RPA发送验证码：" + request.order_id + "," + request.phone)
-    rpa_service = get_supplier_strategy(request.supplier_code, request.order_id)
-    print("###### RPA发送验证码：获取供应商策略实例：" + request.supplier_code)
-    result = rpa_service.get_verification_code(request)
-    print("###### RPA发送验证码：返回结果：" + str(result))
-    return result
+    return OrderService.get_verification_code(request)
 
 @app.post("/api/v1/place-order")
 async def place_order(request: PlaceOrderRequest) -> Dict[str, Any]:
     """下单接口"""
-    rpa_service = get_supplier_strategy(request.supplier_code, request.order_id)
-    result = rpa_service.execute_place_order(request)
-    return result
+    return OrderService.execute_place_order(request)
 
 @app.post("/api/v1/test")
 async def test():
@@ -128,7 +103,7 @@ async def test():
     co.set_argument('--ignore-certificate-errors', True)
     co.set_argument('--blink-settings=imagesEnabled=false')
     co.set_argument(
-        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36')
     co.set_argument('--window-size=1920,1080')
     co.ignore_certificate_errors()
 
@@ -250,6 +225,31 @@ def get_db():
     finally:
         db.close()
 
+
+def run_background_service():
+    """单独运行后台服务"""
+    service = BackgroundService(interval=5)
+    service.start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        service.stop()
+        print("Background service stopped.")
+
+
+def run_order_push_service():
+    """单独运行订单推送服务"""
+    push_service = OrderPushService(interval=10)
+    push_service.start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        push_service.stop()
+        print("Order push service stopped.")
+
+
 @app.post("/orders/status/supplier")
 async def read_orders(params: dict, db: Session = Depends(get_db)):
     order_status = params.get('order_status')
@@ -264,5 +264,14 @@ async def read_orders(params: dict, db: Session = Depends(get_db)):
 
 
 if __name__ == "__main__":
+    # 启动后台服务线程
+    background_thread = Thread(target=run_background_service, daemon=True)
+    background_thread.start()
+
+    # 启动订单推送服务线程
+    order_push_thread = Thread(target=run_order_push_service, daemon=True)
+    order_push_thread.start()
+
+    # 启动 FastAPI 服务
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5000)

@@ -40,8 +40,10 @@ class RPABaseService:
         """执行获取验证码流程"""
         try:
             self.strategy.open_order_page(request)
+            print(f"123:")
             # 假设这里有一些通用操作
             self.strategy.fill_phone_number(request)
+            print(f"1234:")
             # 等待验证码发送
             # 这里可以添加等待逻辑或监听网络请求
             sms_response = self.strategy.get_verification_code(request)

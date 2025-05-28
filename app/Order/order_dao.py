@@ -39,6 +39,7 @@ class SelfStockOrder(Base):
     goods_detail_id = Column(String(128))
     platform = Column(String(512))
     source_data = Column(Text)
+    supplier_order_url = Column(String(256))
 
 
 from sqlalchemy import create_engine
@@ -75,5 +76,31 @@ class SelfStockOrderDAO:
             SelfStockOrder.order_status == order_status,
             SelfStockOrder.supplier_code == supplier_code
         ).limit(10).all()
+
+    def update_order_status_by_id(self, order_id, new_status, order_message):
+        """
+        根据订单ID更新订单状态
+        :param order_message:
+        :param order_id: 订单ID
+        :param new_status: 新的状态值
+        :return: 成功返回 True，失败返回 False
+        """
+        order = self.db_session.query(SelfStockOrder).get(order_id)
+        if not order:
+            print(f"Order with ID {order_id} not found.")
+            return False
+
+        order.order_status = new_status
+        order.sync_order_message = order_message
+        order.remark = f"订单发送短信提示信息为：{order_message}"
+        try:
+            self.db_session.add(order)
+            self.db_session.commit()
+            print(f"Order {order_id} status updated to {new_status}.")
+            return True
+        except Exception as e:
+            self.db_session.rollback()
+            print(f"Failed to update order status: {e}")
+            return False
 
     # 可以根据需要添加更多CRUD操作...
