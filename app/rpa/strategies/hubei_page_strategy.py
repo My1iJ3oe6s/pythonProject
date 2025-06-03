@@ -81,6 +81,7 @@ class HuBeiPageStrategy(SupplierStrategy):
     def get_verification_code(self, request: PlaceOrderRequest) -> Dict[str, Any]:
         """获取验证码（通过监听网络请求），基于订单号的tab"""
         print("###### RPA发送验证码: 测试111：")
+        self.success = True
         tab = self.get_order_tab(request.order_id)
         print("###### RPA发送验证码: 测试222：")
         msg = ""
@@ -167,6 +168,7 @@ class HuBeiPageStrategy(SupplierStrategy):
                 # p_value = query_params.get('p', [None])[0]
                 self.supplier_ping_zheng = url
                 self.sms_code = ""  # 默认验证码
+                tab.close()
         if "p=" not in self.supplier_ping_zheng:
             self.success = False
             try:
@@ -180,19 +182,18 @@ class HuBeiPageStrategy(SupplierStrategy):
                         self.success = False
             except Exception as e:
                 print(f"3、Error capturing SMS code: {e}")
-                tab.close()
                 # 先检查是否存在该订单号的 tab
                 if request.order_id in self.tabs:
                     del self.tabs[request.order_id]  # 删除指定 key
                     # 或者使用 pop 方法（推荐用于安全删除）
                     # self.tabs.pop(request.order_id, None)
                     raise Exception(f"GET Verify code Error：{request.order_id}")
-        # tab.close()
-        # 先检查是否存在该订单号的 tab
-        if request.order_id in self.tabs:
-            del self.tabs[request.order_id]  # 删除指定 key
-            # 或者使用 pop 方法（推荐用于安全删除）
-            # self.tabs.pop(request.order_id, None)
+            # tab.close()
+            # 先检查是否存在该订单号的 tab
+            if request.order_id in self.tabs:
+                del self.tabs[request.order_id]  # 删除指定 key
+                # 或者使用 pop 方法（推荐用于安全删除）
+                # self.tabs.pop(request.order_id, None)
         return {
             'code': 200 if self.success else 500,
             'data':  f"{self.supplier_ping_zheng}" if self.success else f"{self.response_data}",
