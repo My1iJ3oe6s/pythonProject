@@ -22,9 +22,8 @@ class OrderService:
     @staticmethod
     def get_verification_code(request: PlaceOrderRequest):
         """获取验证码接口"""
-        print("###### RPA发送验证码：" + request.order_id + "," + request.phone)
         rpa_service = get_supplier_strategy(request.supplier_code, request.order_id)
-        print("###### RPA发送验证码：获取供应商策略实例：" + request.supplier_code)
+        print("###### 2、发送验证码：获取供应商策略实例：" + request.supplier_code)
         result = rpa_service.get_verification_code(request)
         print("###### RPA发送验证码：返回结果：" + str(result))
         return result

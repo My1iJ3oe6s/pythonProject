@@ -38,7 +38,7 @@ class BackgroundService:
 
     def execute_task(self):
         """Override this method with your custom logic."""
-        print("Executing scheduled task... Fetching orders.")
+        print("#### 执行发送短信任务.")
         db = SessionLocal()
         try:
             dao = SelfStockOrderDAO(db)
@@ -46,10 +46,9 @@ class BackgroundService:
             orders = dao.get_orders_by_status_and_supplier(
                 self.default_order_status, self.default_supplier_code
             )
-            print(f"Fetched {len(orders)} orders for {self.default_supplier_code}.")
-
+            print(f"#### 执行订单数为: {len(orders)} ，供应商策略为: {self.default_supplier_code}.")
             # 缓存订单数据
-            self.cached_orders[self.default_supplier_code] = orders
+            # self.cached_orders[self.default_supplier_code] = orders
 
             # 遍历订单并发送短信
             for order in orders:
@@ -60,7 +59,7 @@ class BackgroundService:
 
     def send_sms_for_order(self, order):
         """调用 OrderService 发送短信，并在成功后更新订单状态"""
-        print(f"###### 准备开发发送短信: {order.order_no}, {order.phone}")
+        print(f"###### 1、准备开发发送短信: {order.order_no}, {order.phone}")
         
         # 构造请求对象
         request = PlaceOrderRequest(
@@ -80,4 +79,4 @@ class BackgroundService:
             # 验证码发送成功后更新订单状态为 102
             dao.update_order_status_by_id(order.order_id, 1 if response.get("code") == 200 else 4,  response.get("msg"))
         except Exception as e:
-            print(f"Failed to send SMS for order {order.order_no}: {e}")
+            print(f"###### 发送短信异常: {order.order_no}: {e}")
