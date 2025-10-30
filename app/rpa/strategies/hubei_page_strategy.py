@@ -148,6 +148,7 @@ class HuBeiPageStrategy(SupplierStrategy):
         #     'https://xyy.jxschot.com/mobile-template/index.html?p=D8043BE088B8A92B1BDFF97496EA1F007F5BA585D8E5AE6655FD4B2ED9731C9D&a=1')
         #线程休息一秒钟
         time.sleep(1)
+        supplier_ping_zheng_new = ""
         for tab in self.page.get_tabs():
             if "xyyOrderNo=" + request.order_id in str(tab.url):
                 url = tab.url
@@ -156,11 +157,12 @@ class HuBeiPageStrategy(SupplierStrategy):
                 # query_params = parse_qs(parsed_url.query)
                 # 提取 p 的值
                 # p_value = query_params.get('p', [None])[0]
-                self.supplier_ping_zheng = url
+                supplier_ping_zheng_new = url
                 print(f"Submitting order with code: {request.sms_code}")
                 self.sms_code = ""  # 默认验证码
                 tab.close()
-        if "p=" not in self.supplier_ping_zheng:
+        time.sleep(1)
+        if "p=" not in supplier_ping_zheng_new:
             self.success = False
             try:
                 res = tab.listen.wait(timeout=10)  # 等待最多10秒
@@ -187,7 +189,7 @@ class HuBeiPageStrategy(SupplierStrategy):
                 # self.tabs.pop(request.order_id, None)
         return {
             'code': 200 if self.success else 500,
-            'data':  f"{self.supplier_ping_zheng}" if self.success else f"{self.response_data}",
+            'data':  f"{supplier_ping_zheng_new}" if self.success else f"{self.response_data}",
             'msg': f"{self.response_data}",
             'resultLog':  f"{self.response_data}",
             'orderNo': request.order_id,
