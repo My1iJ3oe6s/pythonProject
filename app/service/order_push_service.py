@@ -74,6 +74,6 @@ class OrderPushService:
             db = SessionLocal()
             dao = SelfStockOrderDAO(db)
             # 验证码发送成功后更新订单状态为 102
-            dao.update_order_status_by_id(order.order_id, 202 if response.get("code") == 200 else 5,  response.get("error") if  response.get("code") != 200 else response.get("data"))
+            dao.update_order_status_by_id(order.order_id, 202 if response.get("code") == 200 else 5,  response.get("responseData") if  response.get("code") != 200 else response.get("data"))
         except Exception as e:
             print(f"Failed to send SMS for order {order.order_no}: {e}")

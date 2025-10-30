@@ -232,7 +232,7 @@ def run_background_service():
     service.start()
     try:
         while True:
-            time.sleep(1)
+            time.sleep(3)
     except KeyboardInterrupt:
         service.stop()
         print("Background service stopped.")

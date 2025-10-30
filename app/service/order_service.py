@@ -5,9 +5,12 @@ from app.rpa.base import RPABaseService
 from fastapi import HTTPException
 from typing import Optional
 
+from app.rpa.strategies.weidian_page_strategy import WeiDianPageStrategy
+
 SUPPLIER_STRATEGIES = {
     "self": SelfPageStrategy(),  # 添加自营的策略
-    "hubei-dianxin": HuBeiPageStrategy()
+    "hubei-dianxin": HuBeiPageStrategy(),
+    "weidian": WeiDianPageStrategy()
 }
 
 def get_supplier_strategy(supplier_code: str, order_id: Optional[str] = None) -> RPABaseService:

@@ -73,9 +73,10 @@ class SelfStockOrderDAO:
 
     def get_orders_by_status_and_supplier(self, order_status, supplier_code):
         return self.db_session.query(SelfStockOrder).filter(
-            SelfStockOrder.order_status == order_status,
-            SelfStockOrder.supplier_code == supplier_code
-        ).limit(10).all()
+            SelfStockOrder.order_status == order_status
+            # ,
+            # //SelfStockOrder.supplier_code == supplier_code
+        ).limit(1).all()
 
     def update_order_status_by_id(self, order_id, new_status, order_message):
         """
