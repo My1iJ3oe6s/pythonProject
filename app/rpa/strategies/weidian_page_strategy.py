@@ -176,18 +176,7 @@ class WeiDianPageStrategy(SupplierStrategy):
             # 禁用图片资源  主要是为了加快页面加载
             co.set_argument('--blink-settings=imagesEnabled=false')
             co.ignore_certificate_errors()
-            
-            # 在创建页面之前，尝试获取并设置代理
-            try:
-                # 获取代理IP（如果需要认证，可以传入username和password）
-                proxy_ip = self.get_proxy_ip(username="202511011973076938", password="ZXBlO8l5")
-                if proxy_ip:
-                    # 在DrissionPage中，通过ChromiumOptions设置代理
-                    co.set_proxy(proxy_ip)
-                    print(f"已在ChromiumOptions中设置代理: {proxy_ip}")
-            except Exception as e:
-                print(f"设置代理时出错: {e}")
-            
+
             # 创建ChromiumPage对象
             self._page = ChromiumPage(co, timeout=90)
         return self._page

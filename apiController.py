@@ -1,7 +1,7 @@
 import os
 import random  # 导入random模块
 import time
-from app.service.background_service import BackgroundService  # 导入后台服务模块
+from app.service.background_service import BackgroundService, WeiDianBackgroundService  # 导入后台服务模块
 from threading import Thread  # 导入线程模块
 
 from DrissionPage import ChromiumPage, ChromiumOptions
@@ -237,6 +237,18 @@ def run_background_service():
         service.stop()
         print("Background service stopped.")
 
+def run_weidian_background_service():
+    """单独运行后台服务"""
+    weidian_service = WeiDianBackgroundService(interval=10, order_status=101, supplier_code="weidian")
+    weidian_service.start()
+    print("微店订单处理服务已启动")
+    try:
+        while True:
+            time.sleep(3)
+    except KeyboardInterrupt:
+        weidian_service.stop()
+        print("Background service stopped.")
+
 
 def run_order_push_service():
     """单独运行订单推送服务"""
@@ -266,6 +278,9 @@ async def read_orders(params: dict, db: Session = Depends(get_db)):
 if __name__ == "__main__":
     # 启动后台服务线程
     background_thread = Thread(target=run_background_service, daemon=True)
+    background_thread.start()
+
+    background_thread = Thread(target=run_weidian_background_service, daemon=True)
     background_thread.start()
 
     # 启动订单推送服务线程
