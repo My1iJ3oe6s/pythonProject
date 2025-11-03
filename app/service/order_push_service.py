@@ -42,8 +42,8 @@ class OrderPushService:
         db = SessionLocal()
         try:
             dao = SelfStockOrderDAO(db)
-            orders = dao.get_orders_by_status_and_supplier(
-                self.default_order_status, self.default_supplier_code
+            orders = dao.get_orders_by_status(
+                self.default_order_status
             )
             print(f"Pushing {len(orders)} orders for {self.default_supplier_code}.")
 
