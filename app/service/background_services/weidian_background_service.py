@@ -118,11 +118,11 @@ class WeiDianBackgroundService(BaseBackgroundService):
                 self._print_queue_status()
                 
                 # 短暂休眠避免CPU占用过高
-                time.sleep(1)
+                time.sleep(0.4)
                 
             except Exception as e:
                 print(f"#### 订单处理工作线程异常: {e}")
-                time.sleep(2)  # 异常后等待更长时间再重试
+                time.sleep(1)  # 异常后等待更长时间再重试
     
     def _can_process_product(self, product_code, current_time):
         """检查是否可以处理指定商品的订单"""
