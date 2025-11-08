@@ -279,12 +279,12 @@ async def read_orders(params: dict, db: Session = Depends(get_db)):
 
 if __name__ == "__main__":
     # 启动后台服务线程
-    # background_thread = Thread(target=run_background_service, daemon=True)
-    # background_thread.start()
+    background_thread = Thread(target=run_background_service, daemon=True)
+    background_thread.start()
     #
     # background_thread = Thread(target=run_weidian_background_service, daemon=True)
     # background_thread.start()
-    services = start_services()
+    # services = start_services()
 
     # 启动订单推送服务线程
     order_push_thread = Thread(target=run_order_push_service, daemon=True)
