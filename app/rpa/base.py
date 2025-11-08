@@ -9,22 +9,22 @@ class SupplierStrategy(ABC):
     """供应商策略接口，每个供应商需要实现的具体操作"""
 
     @abstractmethod
-    def open_order_page(self, request: PlaceOrderRequest) -> Dict[str, Any]:
+    def open_order_page(self, request: PlaceOrderRequest, browser_pool=None) -> Dict[str, Any]:
         """导航到下单页面"""
         pass
 
     @abstractmethod
-    def fill_phone_number(self, request: PlaceOrderRequest) -> Dict[str, Any]:
+    def fill_phone_number(self, request: PlaceOrderRequest, browser_pool=None) -> Dict[str, Any]:
         """填写手机号"""
         pass
 
     @abstractmethod
-    def get_verification_code(self, request: PlaceOrderRequest) -> Dict[str, Any]:
+    def get_verification_code(self, request: PlaceOrderRequest, browser_pool=None) -> Dict[str, Any]:
         """获取验证码"""
         pass
 
     @abstractmethod
-    def submit_order(self, request: PlaceOrderRequest) -> Dict[str, Any]:
+    def submit_order(self, request: PlaceOrderRequest, browser_pool=None) -> Dict[str, Any]:
         """提交订单"""
         pass
 
@@ -36,15 +36,16 @@ class RPABaseService:
         self.strategy = strategy
         # self.page = Page()  # 示例初始化
 
-    def get_verification_code(self, request: PlaceOrderRequest) -> Dict[str, Any]:
+    def get_verification_code(self, request: PlaceOrderRequest, browser_pool=None) -> Dict[str, Any]:
         """执行获取验证码流程"""
         try:
-            self.strategy.open_order_page(request)
+            # 传递浏览器池给策略类的方法
+            self.strategy.open_order_page(request, browser_pool=browser_pool)
             # 假设这里有一些通用操作
-            self.strategy.fill_phone_number(request)
+            self.strategy.fill_phone_number(request, browser_pool=browser_pool)
             # 等待验证码发送
             # 这里可以添加等待逻辑或监听网络请求
-            sms_response = self.strategy.get_verification_code(request)
+            sms_response = self.strategy.get_verification_code(request, browser_pool=browser_pool)
             return {
                 'code': sms_response.get('code'),
                 'data': sms_response.get('responseData'),
@@ -63,12 +64,12 @@ class RPABaseService:
                 'supplier_response': None
             }
 
-    def execute_place_order(self, request :PlaceOrderRequest) -> Dict[str, Any]:
+    def execute_place_order(self, request :PlaceOrderRequest, browser_pool=None) -> Dict[str, Any]:
         """执行下单流程"""
         try:
             # self.strategy.open_order_page(request.checkout_url)
             # self.strategy.fill_phone_number(request.phone)
-            result = self.strategy.submit_order(request)
+            result = self.strategy.submit_order(request, browser_pool=browser_pool)
             return result
         except Exception as e:
             return {

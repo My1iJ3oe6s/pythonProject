@@ -23,17 +23,18 @@ def get_supplier_strategy(supplier_code: str, order_id: Optional[str] = None) ->
 
 class OrderService:
     @staticmethod
-    def get_verification_code(request: PlaceOrderRequest):
+    def get_verification_code(request: PlaceOrderRequest, browser_pool=None):
         """获取验证码接口"""
         rpa_service = get_supplier_strategy(request.supplier_code, request.order_id)
         print("###### 2、发送验证码：获取供应商策略实例：" + request.supplier_code)
-        result = rpa_service.get_verification_code(request)
+        # 传递浏览器池给RPA服务的验证码方法
+        result = rpa_service.get_verification_code(request, browser_pool=browser_pool)
         print("###### RPA发送验证码：返回结果：" + str(result))
         return result
 
     @staticmethod
-    def execute_place_order(request: PlaceOrderRequest):
+    def execute_place_order(request: PlaceOrderRequest, browser_pool=None):
         """下单接口"""
         rpa_service = get_supplier_strategy(request.supplier_code, request.order_id)
-        result = rpa_service.execute_place_order(request)
+        result = rpa_service.execute_place_order(request, browser_pool=browser_pool)
         return result

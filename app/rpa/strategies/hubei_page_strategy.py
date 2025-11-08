@@ -47,14 +47,31 @@ class HuBeiPageStrategy(SupplierStrategy):
             self._page = ChromiumPage(co, timeout=90)
         return self._page
 
-    def open_order_page(self, request: PlaceOrderRequest) -> Dict[str, Any]:
+    def open_order_page(self, request: PlaceOrderRequest, browser_pool=None) -> Dict[str, Any]:
         """导航到下单页面"""
         if not hasattr(self, 'tabs'):
             self.tabs = {}
+            
+        # 使用浏览器池或默认页面
+        if browser_pool and hasattr(browser_pool, 'get_browser_instance'):
+            browser_instance = browser_pool.get_browser_instance()
+            if browser_instance and hasattr(browser_instance, 'page') and browser_instance.page:
+                print(f"使用浏览器池中的实例 {browser_instance.instance_id} 打开订单页面")
+                tab = browser_instance.page.new_tab(request.open_url)
+                # 保存实例引用以便后续操作
+                self.tabs[request.order_id] = {'tab': tab, 'browser_instance': browser_instance}
+                print("###### 发送短信：2、使用浏览器池打开站点成功：" + request.open_url)
+                return {
+                    'status': 'success',
+                    'msg': '使用浏览器池页面访问成功',
+                    'browser_instance_id': browser_instance.instance_id
+                }
+        
+        # 回退到原有实现
+        print("浏览器池不可用，使用默认页面")
         tab = self.page.new_tab(request.open_url)
-        self.tabs[request.order_id] = tab
+        self.tabs[request.order_id] = {'tab': tab, 'browser_instance': None}
         print("###### 发送短信：2、打开站点成功：" + request.open_url)
-        # 请求回调函数
         return {
             'status': 'success',
             'msg': '页面访问成功'
@@ -66,15 +83,18 @@ class HuBeiPageStrategy(SupplierStrategy):
         :param order_number: 订单编号
         :return: Tab 实例或 None
         """
-        return self.tabs.get(order_number)
+        tab_data = self.tabs.get(order_number)
+        if tab_data:
+            return tab_data.get('tab')
+        return None
 
-    def fill_phone_number(self, request: PlaceOrderRequest) -> Dict[str, Any]:
+    def fill_phone_number(self, request: PlaceOrderRequest, browser_pool=None) -> Dict[str, Any]:
         return {
             'status': 'success',
         }
 
 
-    def get_verification_code(self, request: PlaceOrderRequest) -> Dict[str, Any]:
+    def get_verification_code(self, request: PlaceOrderRequest, browser_pool=None) -> Dict[str, Any]:
         """获取验证码（通过监听网络请求），基于订单号的tab"""
         self.success = True
         tab = self.get_order_tab(request.order_id)
@@ -127,7 +147,7 @@ class HuBeiPageStrategy(SupplierStrategy):
             'responseData': f"{self.response_data}"
         }
 
-    def submit_order(self, request: PlaceOrderRequest) -> Dict[str, Any]:
+    def submit_order(self, request: PlaceOrderRequest, browser_pool=None) -> Dict[str, Any]:
         """提交订单，基于订单号的tab"""
         tab = self.get_order_tab(request.order_id)
         if not tab:

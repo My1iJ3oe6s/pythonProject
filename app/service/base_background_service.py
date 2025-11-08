@@ -57,8 +57,9 @@ class BaseBackgroundService(BackgroundServiceInterface):
         )
 
         try:
-            # 调用验证码接口
-            response = OrderService.get_verification_code(request)
+            # 调用验证码接口并传递浏览器池
+            browser_pool = getattr(self, 'browser_pool', None)
+            response = OrderService.get_verification_code(request, browser_pool=browser_pool)
             db = SessionLocal()
             dao = SelfStockOrderDAO(db)
             # 验证码发送成功后更新订单状态为 102

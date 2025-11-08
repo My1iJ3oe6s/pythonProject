@@ -5,8 +5,9 @@ from app.Order.order_dao import SelfStockOrderDAO, SessionLocal
 class BackgroundService(BaseBackgroundService):
     """原有的定时任务服务，处理普通订单"""
     
-    def __init__(self, interval=5, order_status=101, supplier_code="hubei-dianxin"):
+    def __init__(self, interval=5, order_status=101, supplier_code="hubei-dianxin", browser_pool=None):
         super().__init__(interval, order_status, supplier_code)
+        self.browser_pool = browser_pool
 
     def execute_task(self):
         """执行发送短信任务"""
